@@ -3,7 +3,7 @@ package transport
 import (
 	"encoding/json"
 	"errors"
-	v1 "github.com/kyzrlabs/bitpanda-proxy/intern/pkg/bitpanda/v1"
+	"github.com/kyzrlabs/bitpanda-proxy/pkg/bitpanda/v1"
 	"net/http"
 )
 

@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"github.com/kyzrlabs/bitpanda-proxy/intern/config"
-	v1 "github.com/kyzrlabs/bitpanda-proxy/intern/pkg/bitpanda/v1"
-	"github.com/kyzrlabs/bitpanda-proxy/intern/pkg/handlers"
 	"github.com/kyzrlabs/bitpanda-proxy/intern/transport"
 	"github.com/kyzrlabs/bitpanda-proxy/logging"
+	"github.com/kyzrlabs/bitpanda-proxy/pkg/bitpanda/v1"
+	"github.com/kyzrlabs/bitpanda-proxy/pkg/handlers"
 	"log"
 	"log/slog"
 	"os"
