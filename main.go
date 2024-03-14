@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	port, host, logLevel, logJson, err := config.Load()
+	port, host, logLevel, logJson, cacheDuration, err := config.Load() //TODO maybe be nice and add some flags for config
 
 	if err != nil {
 		log.Fatalf("cannot get cli %v", err)
@@ -34,7 +34,7 @@ func main() {
 		logger.Error("cannot get cli", "err", err)
 		os.Exit(1)
 	}
-	bitpandaService := v1.NewService(logger)
+	bitpandaService := v1.NewService(logger, cacheDuration)
 	txHandler := handlers.NewTransactionsHandler(bitpandaService)
 
 	server := transport.NewHttpServer(httpConf, transport.WithFunc(txHandler.Path(), txHandler.HandlerFunc))

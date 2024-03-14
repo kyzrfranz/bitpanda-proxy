@@ -28,7 +28,8 @@ func Error(w http.ResponseWriter, err error) {
 
 	switch {
 	case errors.As(err, &bitpandaError):
-		http.Error(w, bitpandaError.Title, bitpandaError.Status)
+		data, _ := json.Marshal(bitpandaError)
+		http.Error(w, string(data), bitpandaError.Status)
 		return
 	default:
 		http.Error(w, err.Error(), http.StatusInternalServerError)

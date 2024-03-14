@@ -5,17 +5,26 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func Load() (port int, host string, logLevel slog.Level, logJson bool, err error) {
+func Load() (port int, host string, logLevel slog.Level, logJson bool, cacheDuration time.Duration, err error) {
 	portStr := os.Getenv("PORT")
 	if portStr == "" {
 		portStr = "8080"
 	}
 
-	port, err = strconv.Atoi(portStr)
-	if err != nil {
-		return 8080, "", slog.LevelInfo, false, nil
+	durationStr := os.Getenv("CACHE_DURATION_MINUTES")
+	durationMinutes, parseErr := strconv.Atoi(durationStr)
+	if parseErr != nil {
+		durationMinutes = 30
+	}
+
+	cacheDuration = time.Minute * time.Duration(durationMinutes)
+
+	port, parseErr = strconv.Atoi(portStr)
+	if parseErr != nil {
+		port = 8080
 	}
 
 	host = os.Getenv("HOST")
@@ -24,9 +33,9 @@ func Load() (port int, host string, logLevel slog.Level, logJson bool, err error
 	}
 
 	logJsonStr := os.Getenv("LOG_JSON")
-	logJson, err = strconv.ParseBool(logJsonStr)
-	if err != nil {
-		return 8080, "", slog.LevelInfo, false, nil
+	logJson, parseErr = strconv.ParseBool(logJsonStr)
+	if parseErr != nil {
+		logJson = false
 	}
 
 	loglevelFromEnv := os.Getenv("LOG_LEVEL")

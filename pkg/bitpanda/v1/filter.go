@@ -21,8 +21,8 @@ type TxFilter struct {
 	Type       string
 	Cursor     string
 	CoinSymbol string
-	From       int
-	To         int
+	From       int64
+	To         int64
 	IsSavings  bool
 }
 
@@ -66,10 +66,10 @@ func (f TxFilter) Apply(data []Transaction) []Transaction {
 		}
 		if pass && (f.From != 0 || f.To != 0) {
 			if f.To == 0 {
-				f.To = int(time.Now().Unix())
+				f.To = time.Now().Unix()
 			}
-			dt, err := strconv.Atoi(item.Attributes.Time.Unix)
-			pass = err == nil && pass && dt >= f.From && dt <= f.To
+			dt := item.Attributes.Time.Unix
+			pass = pass && dt >= f.From && dt <= f.To
 		}
 		return pass
 	})
@@ -99,14 +99,14 @@ func FilterFromReq(r *http.Request) []TxOption {
 		}
 	}
 
-	var msFrom, msTo int
+	var msFrom, msTo int64
 	if from := query.Get("from"); from != "" {
-		if fromInt, err := strconv.Atoi(from); err == nil {
+		if fromInt, err := strconv.ParseInt(from, 10, 64); err == nil {
 			msFrom = fromInt
 		}
 	}
 	if to := query.Get("to"); to != "" {
-		if toInt, err := strconv.Atoi(to); err == nil {
+		if toInt, err := strconv.ParseInt(to, 10, 64); err == nil {
 			msTo = toInt
 		}
 	}
@@ -146,7 +146,7 @@ func WithCoinSymbol(coinSymbol string) TxOption {
 	}
 }
 
-func WithDateRange(from, to int) TxOption {
+func WithDateRange(from, to int64) TxOption {
 	return func(filter *TxFilter) {
 		filter.From = from
 		filter.To = to

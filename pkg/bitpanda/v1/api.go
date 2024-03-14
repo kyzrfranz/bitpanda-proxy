@@ -1,7 +1,9 @@
 package v1
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -97,5 +99,26 @@ type TradeAttributes struct {
 
 type Time struct {
 	DateIso8601 time.Time `json:"date_iso8601"`
-	Unix        string    `json:"unix"`
+	Unix        int64     `json:"unix"`
+}
+
+func (t *Time) UnmarshalJSON(data []byte) error {
+	tmp := struct {
+		DateIso8601 time.Time `json:"date_iso8601"`
+		Unix        string    `json:"unix"` //TODO for whatever reasons the peeps at bitpanda decided to do this...
+	}{}
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	t.DateIso8601 = tmp.DateIso8601
+
+	unixInt, err := strconv.ParseInt(tmp.Unix, 10, 64)
+	if err != nil {
+		return err
+	}
+	t.Unix = unixInt
+
+	return nil
 }
