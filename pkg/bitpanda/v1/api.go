@@ -8,6 +8,7 @@ import (
 )
 
 const BaseUrl = "https://api.bitpanda.com/v1"
+const ApiKeyHeader = "X-API-KEY"
 
 type Response[T any] struct {
 	Errors []Error `json:"errors,omitempty"`

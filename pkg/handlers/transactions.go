@@ -2,17 +2,17 @@ package handlers
 
 import (
 	"github.com/kyzrlabs/bitpanda-proxy/intern/transport"
-	v12 "github.com/kyzrlabs/bitpanda-proxy/pkg/bitpanda/v1"
+	"github.com/kyzrlabs/bitpanda-proxy/pkg/bitpanda/v1"
 	"net/http"
 )
 
 const TransactionsPath = "/transactions"
 
 type transactionsHandler struct {
-	service v12.Service
+	service v1.Service
 }
 
-func NewTransactionsHandler(service v12.Service) Handler {
+func NewTransactionsHandler(service v1.Service) Handler {
 	return &transactionsHandler{
 		service: service,
 	}
@@ -23,8 +23,8 @@ func (h *transactionsHandler) HandlerFunc(w http.ResponseWriter, r *http.Request
 	case <-done:
 		break
 	default:
-		options := v12.FilterFromReq(r)
-		apiKey := r.Header.Get("X-API-KEY")
+		options := v1.FilterFromReq(r)
+		apiKey := r.Header.Get(v1.ApiKeyHeader)
 		tx, err := h.service.Transactions(apiKey, options...)
 		if err != nil {
 			transport.Error(w, err)

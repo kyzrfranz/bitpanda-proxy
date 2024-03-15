@@ -33,8 +33,9 @@ func (s *service) Transactions(apiKey string, options ...TxOption) (*Response[Tr
 	filter := TxFilter{}
 
 	var data *Response[Transaction]
+	filterHash := filter.hash()
 
-	cacheItem := s.cache.Get("transactions")
+	cacheItem := s.cache.Get(filterHash)
 
 	if cacheItem != nil && !cacheItem.IsExpired() {
 		s.logger.Debug("hit the cache", "expiration", cacheItem.ExpiresAt())
@@ -51,7 +52,7 @@ func (s *service) Transactions(apiKey string, options ...TxOption) (*Response[Tr
 		if err != nil {
 			return nil, err
 		}
-		s.cache.Set("transactions", *d, ttlcache.DefaultTTL)
+		s.cache.Set(filterHash, *d, ttlcache.DefaultTTL)
 		data = d
 	}
 
@@ -77,7 +78,7 @@ func (s *service) get(pageSize int, filter TxFilter) (*Response[Transaction], er
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("x-api-key", s.apiKey)
+	req.Header.Add(ApiKeyHeader, s.apiKey)
 	filter.AppendToReq(req)
 
 	res, err := client.Do(req)

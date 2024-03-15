@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/samber/lo"
 	"net/http"
@@ -16,17 +18,20 @@ type MetaFilter struct {
 	PageSize int
 }
 
+// TxFilter provides various filter options for BP transactions.
+// Some of them are handled by the BP API, some will be handled by this proxy.
 type TxFilter struct {
-	Status     string
-	Type       string
-	Cursor     string
-	CoinSymbol string
-	From       int64
-	To         int64
-	IsSavings  bool
+	Status     string // handled by BP
+	Type       string // handled by BP
+	Cursor     string // handled by BP
+	CoinSymbol string // custom
+	From       int64  // custom
+	To         int64  // custom
+	IsSavings  bool   // custom
 }
 
-func (f TxFilter) AppendToReq(r *http.Request) {
+// AppendToReq builds the query for the BP Api for the params it will allow.
+func (f *TxFilter) AppendToReq(r *http.Request) {
 	q := r.URL.Query()
 	if f.Status != "" {
 		q.Add("status", f.Status)
@@ -40,22 +45,16 @@ func (f TxFilter) AppendToReq(r *http.Request) {
 		q.Add("cursor", f.Cursor)
 	}
 
-	if f.CoinSymbol != "" {
-		q.Add("coin_symbol", f.CoinSymbol)
-	}
-
-	if f.IsSavings != false {
-		q.Add("is_savings", strconv.FormatBool(f.IsSavings))
-	}
-
-	if f.From != 0 && f.To != 0 {
-		q.Add("from", fmt.Sprintf("%d", f.From))
-		q.Add("to", fmt.Sprintf("%d", f.To))
-	}
 	r.URL.RawQuery = q.Encode()
 }
 
-func (f TxFilter) Apply(data []Transaction) []Transaction {
+func (f *TxFilter) hash() string {
+	hash := md5.Sum([]byte(fmt.Sprintf("%s-%s-%s", f.Cursor, f.Status, f.Type)))
+	return hex.EncodeToString(hash[:])
+}
+
+// Apply will do a filter on params the BP API does not provide on the results.
+func (f *TxFilter) Apply(data []Transaction) []Transaction {
 	return lo.Filter(data, func(item Transaction, index int) bool {
 		pass := true
 		if f.CoinSymbol != "" {
@@ -75,6 +74,7 @@ func (f TxFilter) Apply(data []Transaction) []Transaction {
 	})
 }
 
+// FilterFromReq parses the request to this proxy and extracs all the passed params into the filter.
 func FilterFromReq(r *http.Request) []TxOption {
 	var options []TxOption
 
